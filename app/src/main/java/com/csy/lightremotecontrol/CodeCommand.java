@@ -45,7 +45,7 @@ public class CodeCommand {
         FillCode8(CodeDarker, 0x22);
 
         FillCode8(Open, 0x31);
-        FillCode8(Open, 0x32);
+        FillCode8(Close, 0x32);
     }
 
     //发送8字节的信息
