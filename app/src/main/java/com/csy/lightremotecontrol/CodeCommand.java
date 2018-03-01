@@ -16,6 +16,7 @@ public class CodeCommand {
     public static final int bit1Up = 1600;
 
 
+    //小房子命令
     public static int[] CodeBalcony = new int[36];
     public static int[] codeBedroom = new int[36];
     public static int[] CodeSmallLivingRoom = new int[36];
@@ -25,21 +26,30 @@ public class CodeCommand {
     public static int[] CodeBrighter = new int[36];
     public static int[] CodeDarker = new int[36];
 
+    //大房子命令
+    public static int[] Open = new int[36];
+    public static int[] Close = new int[36];
+
+
     //命令格式（数组内的数值拼接）
     //起始码+8位数据码+8位校验码+1位结束码（写0）。校验码直接取数据的反码
     //先发送低位
     static {
-        FillCode(CodeBalcony, 0x11);
-        FillCode(codeBedroom, 0x12);
-        FillCode(CodeSmallLivingRoom, 0x13);
-        FillCode(CodeLivingRoom, 0x14);
-        FillCode(CodeLeftLawn, 0x15);
-        FillCode(CodeRightLawn, 0x16);
-        FillCode(CodeBrighter, 0x21);
-        FillCode(CodeDarker, 0x22);
+        FillCode8(CodeBalcony, 0x11);
+        FillCode8(codeBedroom, 0x12);
+        FillCode8(CodeSmallLivingRoom, 0x13);
+        FillCode8(CodeLivingRoom, 0x14);
+        FillCode8(CodeLeftLawn, 0x15);
+        FillCode8(CodeRightLawn, 0x16);
+        FillCode8(CodeBrighter, 0x21);
+        FillCode8(CodeDarker, 0x22);
+
+        FillCode8(Open, 0x31);
+        FillCode8(Open, 0x32);
     }
 
-    private static void FillCode(int[] code, int value) {
+    //发送8字节的信息
+    private static void FillCode8(int[] code, int value) {
         code[0] = startdown;
         code[1] = startup;
         for (int i = 0; i < 8; i++) {
@@ -60,5 +70,48 @@ public class CodeCommand {
         code[35] = bit0Up;
     }
 
+    //发送16字节的信息
+    private static void FillCode16(int[] code, int value) {
+        code[0] = startdown;
+        code[1] = startup;
+        //前8字节的信息和校验码
+        for (int i = 0; i < 8; i++) {
+            if ((value & 0x01) == 1) {
+                code[2 + i * 2] = bit1Down;
+                code[3 + i * 2] = bit1Up;
+                code[18 + i * 2] = bit0Down;
+                code[19 + i * 2] = bit0Up;
+            } else {
+                code[2 + i * 2] = bit0Down;
+                code[3 + i * 2] = bit0Up;
+                code[18 + i * 2] = bit1Down;
+                code[19 + i * 2] = bit1Up;
+            }
+            value >>= 1;
+        }
+        //后8字节的信息和校验码
+        for (int i = 0; i < 8; i++) {
+            if ((value & 0x01) == 1) {
+                code[2 + 32 + i * 2] = bit1Down;
+                code[3 + 32 + i * 2] = bit1Up;
+                code[18 + 32 + i * 2] = bit0Down;
+                code[19 + 32 + i * 2] = bit0Up;
+            } else {
+                code[2 + 32 + i * 2] = bit0Down;
+                code[3 + 32 + i * 2] = bit0Up;
+                code[18 + 32 + i * 2] = bit1Down;
+                code[19 + 32 + i * 2] = bit1Up;
+            }
+            value >>= 1;
+        }
+        code[66] = bit0Down;
+        code[67] = bit0Up;
+    }
 
+    //将percent+0x80即可
+    public static int[] GetBrighter(int percent) {
+        int[] array = new int[36];
+        FillCode8(array, 128 + percent);
+        return array;
+    }
 }

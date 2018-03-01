@@ -6,11 +6,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -84,8 +86,34 @@ public class MainActivity extends AppCompatActivity {
         btnRightLawn.setOnClickListener(clickListener);
         btnBrighter.setOnClickListener(clickListener);
         btnDarker.setOnClickListener(clickListener);
-
         inItEvent();
+
+        //页面2
+        RelativeLayout panel = (RelativeLayout) findViewById(R.id.panel);
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int totalW = dm.widthPixels;
+        int totalH = dm.heightPixels;
+        int len = Math.min(totalW, totalH);
+
+        RoundKnobButton rv = new RoundKnobButton(this, R.drawable.stator, R.drawable.rotoron, R.drawable.rotoroff, len / 2, len / 2);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp.addRule(RelativeLayout.CENTER_IN_PARENT);
+        panel.addView(rv, lp);
+        rv.SetListener(new RoundKnobButton.RoundKnobButtonListener() {
+            public void onStateChange(boolean newstate) {
+                if (IRBack) {
+                    sendMsg(38000, newstate ? CodeCommand.Open : CodeCommand.Close);
+                }
+            }
+
+            public void onRotate(final int percentage) {
+                if (IRBack) {
+                    sendMsg(38000, CodeCommand.GetBrighter(percentage));
+                }
+            }
+        });
+
     }
 
     private View.OnClickListener clickListener = new View.OnClickListener() {
